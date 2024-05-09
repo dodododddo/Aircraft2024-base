@@ -1,0 +1,31 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Record{
+     # username: String
+     # score: int
+     # time: Date
+     + Record(String username, int score)
+     + Record(String recordString)
+     + getUsername(): String
+     + getScore(): int
+     + getTime(): Date
+     + toString(): String
+}
+
+interface RecordDAO{
+    + {abstract} insert(Record record): void
+    + {abstract} getAll() : List<Record>
+    + {abstract} printAll(): void
+}
+
+class RecordDAOImpl{
+     + RecordDAOImpl()
+     + insert(Record record): void
+     + getAll() : List<Record>
+     + printAll(): void
+}
+
+RecordDAOImpl ..|> RecordDAO
+RecordDAOImpl --> Record
+@enduml

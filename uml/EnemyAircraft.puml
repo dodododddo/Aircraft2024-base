@@ -1,0 +1,56 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+abstract class EnemyAircraft{
+    + EnemyAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + {abstract} int getScore()
+}
+
+
+class MobEnemy{
+    - static int score
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + int getScore()
+}
+
+EnemyAircraft <|-- MobEnemy
+
+class EliteEnemy {
+    - static int score
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + forward():void
+    + shoot():List<BaseBullet>
+    + int getScore()
+}
+
+EnemyAircraft <|-- EliteEnemy
+
+abstract class EnemyAircraftFactory{
+    - protected int aircraftSpeedX
+    - protected int aircraftSpeedY
+    - protected int aircraftHp
+    + EnemyAircraftFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftHp)
+    + {abstract} EnemyAircraft createEnemyAircraft()
+}
+
+class MobEnemyFactory{
+    MobEnemyFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp)
+    EnemyAircraft createEnemyAircraft()
+}
+
+class EliteEnemyFactory{
+    EliteEnemyFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp)
+    EnemyAircraft createEnemyAircraft()
+}
+
+EnemyAircraftFactory <|-- EliteEnemyFactory
+EnemyAircraftFactory <|-- MobEnemyFactory
+
+EnemyAircraftFactory ..> EnemyAircraft
+MobEnemyFactory ..> MobEnemy
+EliteEnemyFactory ..> EliteEnemy
+
+
+
+@enduml

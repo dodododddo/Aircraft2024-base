@@ -1,0 +1,83 @@
+@startuml
+'https://plantuml.com/class-diagram
+Abstract class AbstractAircraft{
+    - strategy: AbstractStrategy
+    - ...
+    + {abstract} setStrategy(AbstractStrategy strategy): void
+    + shoot()
+    + ...(...)
+
+}
+
+Interface AbstractStrategy{
+    + {abstract} execute(AbstractAircraft aircraft): void
+}
+
+
+
+class StraightShoot{
+    + execute(AbstractAircraft aircraft): void
+}
+
+class DontShoot{
+    + execute(AbstractAircraft aircraft): void
+}
+
+class SprayShoot{
+    + execute(AbstractAircraft aircraft): void
+}
+
+class RingShoot{
+    + execute(AbstractAircraft aircraft): void
+}
+
+AbstractStrategy <|-- StraightShoot
+AbstractStrategy <|-- DontShoot
+AbstractStrategy <|-- SprayShoot
+AbstractStrategy <|-- RingShoot
+
+AbstractAircraft o--> AbstractStrategy
+
+AbstractAircraft <-- AbstractProp
+Game --> AbstractProp
+
+Abstract class AbstractProp{
+    {abstract} applyToAircraft(AbstractAircraft aircraft)
+}
+AbstractProp <|-- PropBullet
+AbstractProp <|-- PropBulletPlus
+AbstractProp <|-- PropBomb
+AbstractProp <|-- PropBlood
+
+PropBulletPlus ..> RingShoot
+PropBullet ..> SprayShoot
+
+
+
+
+
+class PropBullet{
+    + applyToAircraft(AbstractAircraft aircraft): void
+}
+
+class PropBulletPlus{
+    + applyToAircraft(AbstractAircraft aircraft): void
+}
+
+class PropBlood{
+    + applyToAircraft(AbstractAircraft aircraft): void
+}
+
+class PropBomb{
+    + applyToAircraft(AbstractAircraft aircraft): void
+}
+
+class Game{
+    - ...
+    + shootAction(): void
+    + crashCheckAction(): void
+    + ...(...)
+}
+
+Game --> AbstractAircraft
+@enduml

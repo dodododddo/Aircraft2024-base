@@ -3,6 +3,7 @@ package edu.hitsz.aircraft;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
 import edu.hitsz.prop.AbstractProp;
+import edu.hitsz.strategy.AbstractStrategy;
 
 import java.util.List;
 
@@ -18,6 +19,9 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
      */
     protected int maxHp;
     protected int hp;
+    protected AbstractStrategy strategy;
+    protected int direction;
+    protected int power;
 
     public AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
         super(locationX, locationY, speedX, speedY);
@@ -44,6 +48,9 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
         return hp;
     }
 
+    public int getDirection() {return direction;}
+
+    public int getPower() {return power;}
 
     /**
      * 飞机射击方法，可射击对象必须实现
@@ -51,7 +58,13 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
      *  可射击对象需实现，返回子弹
      *  非可射击对象空实现，返回null
      */
-    public abstract List<BaseBullet> shoot();
+    public List<BaseBullet> shoot(){
+        return strategy.execute(this);
+    }
+
+    public void setStrategy(AbstractStrategy strategy){
+        this.strategy = strategy;
+    }
 
 }
 

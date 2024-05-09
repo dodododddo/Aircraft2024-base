@@ -1,15 +1,14 @@
 package edu.hitsz.application;
 
-import edu.hitsz.aircraftfactory.EliteEnemyFactory;
-import edu.hitsz.aircraftfactory.EnemyAircraftFactory;
-import edu.hitsz.aircraftfactory.MobEnemyFactory;
+import edu.hitsz.aircraftfactory.*;
 import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.dao.RecordDAO;
+import edu.hitsz.dao.RecordDAOImpl;
 import edu.hitsz.prop.*;
-import edu.hitsz.propfactory.PropBombFactory;
-import edu.hitsz.propfactory.PropBulletFactory;
-import edu.hitsz.propfactory.PropFactory;
+import edu.hitsz.propfactory.*;
+import edu.hitsz.record.Record;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import javax.swing.*;
@@ -17,6 +16,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
 import java.util.List;
+import java.util.HashMap;
 import java.util.concurrent.*;
 
 /**
@@ -44,8 +44,9 @@ public class Game extends JPanel {
     private final List<BaseBullet> enemyBullets;
     private final List<AbstractProp> props;
 
-    private final List<EnemyAircraftFactory> enemyFactories;
-    private final List<PropFactory> propFactories;
+    private final HashMap<String, EnemyAircraftFactory> enemyFactories;
+    private final HashMap<String, PropFactory> propFactories;
+
 
 
 
@@ -64,6 +65,8 @@ public class Game extends JPanel {
      */
     private int time = 0;
 
+    private int boss_id = 1;
+
     /**
      * 周期（ms)
      * 指示子弹的发射、敌机的产生频率
@@ -76,6 +79,8 @@ public class Game extends JPanel {
      */
     private boolean gameOverFlag = false;
 
+    private RecordDAO recordDAO = new RecordDAOImpl();
+
     public Game() {
         heroAircraft = HeroAircraft.getInstance();
 
@@ -84,14 +89,18 @@ public class Game extends JPanel {
         enemyBullets = new LinkedList<>();
         props = new LinkedList<>();
 
-        enemyFactories = new LinkedList<>();
-        enemyFactories.add(new EliteEnemyFactory(5, 10, 30));
-        enemyFactories.add(new MobEnemyFactory(0, 10, 30));
+        enemyFactories = new HashMap<String, EnemyAircraftFactory>();
+        enemyFactories.put("EliteEnemy", new EliteEnemyFactory(2, 10, 30));
+        enemyFactories.put("MobEnemy",new MobEnemyFactory(0, 10, 30));
+        enemyFactories.put("ElitePlus", new ElitePlusFactory(2, 10, 30));
+        enemyFactories.put("Boss", new BossFactory(2, 200));
 
-        propFactories = new LinkedList<>();
-        propFactories.add(new PropBombFactory());
-        propFactories.add(new PropBulletFactory());
-        propFactories.add(new PropBombFactory());
+
+        propFactories = new HashMap<String, PropFactory>();
+        propFactories.put("PropBomb",new PropBombFactory());
+        propFactories.put("PropBullet",new PropBulletFactory());
+        propFactories.put("PropBlood", new PropBloodFactory(30));
+        propFactories.put("PropBulletPlus", new PropBulletPlusFactory());
 
 
 
@@ -110,6 +119,13 @@ public class Game extends JPanel {
 
     }
 
+    public void printRanking(){
+        System.out.println("********************************\n");
+        System.out.println("             得分排行榜           \n");
+        System.out.println("********************************\n");
+        recordDAO.printAll();
+    }
+
     /**
      * 游戏启动入口，执行游戏逻辑
      */
@@ -126,13 +142,22 @@ public class Game extends JPanel {
                 System.out.println(time);
                 // 新敌机产生
 
-                if (enemyAircrafts.size() < enemyMaxNumber) {
-                    int random_num = (int)(Math.random() * 6);
-                    if(random_num == 0){
-                        enemyAircrafts.add(enemyFactories.get(0).createEnemyAircraft());
+                if (enemyAircrafts.size() < enemyMaxNumber && !Boss.exist) {
+
+                    if(score >= 400 * boss_id){
+                        EnemyAircraft boss = enemyFactories.get("Boss").createEnemyAircraft();
+                        enemyAircrafts.add(boss);
+                        boss_id++;
                     }
-                    else if(random_num > 0){
-                        enemyAircrafts.add(enemyFactories.get(1).createEnemyAircraft());
+                    else {
+                        int random_num = (int) (Math.random() * 6);
+                        if (random_num == 0) {
+                            enemyAircrafts.add(enemyFactories.get("ElitePlus").createEnemyAircraft());
+                        } else if (random_num == 1 || random_num == 2) {
+                            enemyAircrafts.add(enemyFactories.get("EliteEnemy").createEnemyAircraft());
+                        } else if (random_num >= 3) {
+                            enemyAircrafts.add(enemyFactories.get("MobEnemy").createEnemyAircraft());
+                        }
                     }
                 }
                 // 飞机射出子弹
@@ -160,6 +185,10 @@ public class Game extends JPanel {
             // 游戏结束检查英雄机是否存活
             if (heroAircraft.getHp() <= 0) {
                 // 游戏结束
+                String username = "testUsername";
+                Record record = new Record(username, score);
+                recordDAO.insert(record);
+                printRanking();
                 executorService.shutdown();
                 gameOverFlag = true;
                 System.out.println("Game Over!");
@@ -259,12 +288,20 @@ public class Game extends JPanel {
                     if (enemyAircraft.notValid()) {
                         // TODO 获得分数，产生道具补给
                         score += enemyAircraft.getScore();
-                        AbstractProp prop = propFactories.get((int)(Math.random() * 3)).createProp(enemyAircraft);
-                        if(prop != null){
-                            props.add(propFactories.get((int)(Math.random() * 3)).createProp(enemyAircraft));
+
+                        for(int i = 0; i < (int)(Math.random() * (enemyAircraft.getPropNum() + 1));++i) {
+                            // 创建0-propNum个道具
+                            int random_num = (int) (Math.random() * 4);
+                            if (random_num == 0) {
+                                props.add(propFactories.get("PropBlood").createProp(enemyAircraft));
+                            } else if (random_num == 1) {
+                                props.add(propFactories.get("PropBomb").createProp(enemyAircraft));
+                            } else if (random_num == 2) {
+                                props.add(propFactories.get("PropBullet").createProp(enemyAircraft));
+                            } else {
+                                props.add(propFactories.get("PropBulletPlus").createProp(enemyAircraft));
+                            }
                         }
-
-
                     }
                 }
                 // 英雄机 与 敌机 相撞，均损毁
