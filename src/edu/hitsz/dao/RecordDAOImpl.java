@@ -13,8 +13,18 @@ import java.util.List;
 
 public class RecordDAOImpl implements RecordDAO{
 
-    private String save_path = "./src/data/score_record.txt";
-    public RecordDAOImpl(){
+    private static String easy_path = "./src/data/record_easy.txt";
+    private static String medium_path = "./src/data/record_medium.txt";
+    private static String hard_path = "./src/data/record_hard.txt";
+
+    private String save_path;
+    public RecordDAOImpl(int level){
+        save_path = switch (level){
+            case 1 -> easy_path;
+            case 2 -> medium_path;
+            case 3 -> hard_path;
+            default -> null;
+        };
     }
 
     @Override
@@ -39,6 +49,12 @@ public class RecordDAOImpl implements RecordDAO{
             e.printStackTrace();
 
         }
+    }
+
+    @Override
+    public void delete(int idx){
+        List<Record> records = getAll();
+        records.remove(idx);
     }
 
     @Override
@@ -67,10 +83,10 @@ public class RecordDAOImpl implements RecordDAO{
         return records;
     }
 
-    public void printAll(){
-        List<Record> records = getAll();
-        for(int i = 0; i < records.size(); i++){
-            System.out.println("第" + (i + 1) + "名: " + records.get(i).toString());
-        }
-    }
+//    public void printAll(){
+//        List<Record> records = getAll();
+//        for(int i = 0; i < records.size(); i++){
+//            System.out.println("第" + (i + 1) + "名: " + records.get(i).toString());
+//        }
+//    }
 }
