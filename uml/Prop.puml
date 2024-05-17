@@ -18,9 +18,17 @@ class PropBullet{
     + applyToAircraft(HeroAircraft heroAircraft):void
 }
 
+class PropBulletPlus{
+    + PropBulletPlus()
+    + applyToAircraft(HeroAircraft heroAircraft):void
+}
+
 class PropBomb{
+    - observers:List<PropBombObservable>
     + PropBomb()
     + applyToAircraft(HeroAircraft heroAircraft):void
+    + register(PropBombObservable observe):void
+    + notifyAllObservers():void
 }
 
 abstract class PropFactory{
@@ -39,6 +47,11 @@ class PropBulletFactory{
     + createProp(EnemyAircraft enemyAircraft): AbstractProp
 }
 
+class PropBulletPlusFactory{
+    + PropBulletPlusFactory()
+    + createProp(EnemyAircraft enemyAircraft): AbstractProp
+}
+
 class PropBombFactory{
     + PropBombFactory()
     + createProp(EnemyAircraft enemyAircraft): AbstractProp
@@ -47,13 +60,16 @@ class PropBombFactory{
 AbstractProp <|-- PropBlood
 AbstractProp <|-- PropBullet
 AbstractProp <|-- PropBomb
+AbstractProp <|-- PropBulletPlus
 PropFactory <|-- PropBloodFactory
 PropFactory <|-- PropBulletFactory
+PropFactory <|-- PropBulletPlusFactory
 PropFactory <|-- PropBombFactory
 
 PropFactory ..> AbstractProp
 PropBloodFactory ..> PropBlood
 PropBulletFactory ..> PropBullet
+PropBulletPlusFactory ..> PropBulletPlus
 PropBombFactory ..> PropBomb
 
 

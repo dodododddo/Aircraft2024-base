@@ -1,0 +1,46 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+Interface PropBombObservable{
+    + {abstract} update():void
+}
+
+class PropBomb{
+    - observers:List<PropBombObservable>
+    + applyToAircraft(HeroAircraft heroAircraft):void
+    + register(PropBombObservable observer):void // 观察者注册
+    + notifyAllObservers():void
+}
+
+class EnemyBullet{
+    - ...
+    + update()
+    + ...()
+}
+
+class EliteEnemy{
+    - ...
+    + update()
+    + ...()
+}
+
+class ElitePlus{
+    - ...
+    + update()
+    + ...()
+}
+
+class MobEnemy{
+    - ...
+    + update()
+    + ...()
+}
+
+
+EliteEnemy ..|> PropBombObservable
+ElitePlus ..|> PropBombObservable
+MobEnemy ..|> PropBombObservable
+EnemyBullet ..|> PropBombObservable
+PropBomb o--> PropBombObservable
+
+@enduml

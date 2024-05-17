@@ -36,6 +36,7 @@ public abstract class AbstractProp extends AbstractFlyingObject{
         Runnable r = () -> {
             try {
                 Thread.sleep(5000);
+                heroAircraft.setShootNum(1);
                 heroAircraft.setStrategy(new StraightShoot());
             } catch (InterruptedException ignore){
             }

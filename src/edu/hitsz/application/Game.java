@@ -4,6 +4,7 @@ import edu.hitsz.aircraftfactory.*;
 import edu.hitsz.aircraft.*;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.basic.AbstractFlyingObject;
+import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.dao.RecordDAO;
 import edu.hitsz.dao.RecordDAOImpl;
 import edu.hitsz.prop.*;
@@ -24,7 +25,7 @@ import java.util.concurrent.*;
  *
  * @author hitsz
  */
-public class Game extends JPanel {
+public abstract class Game extends JPanel {
 
     protected int backGroundTop = 0;
     protected static int level;
@@ -32,75 +33,57 @@ public class Game extends JPanel {
     /**
      * Scheduled 线程池，用于任务调度
      */
-    private final ScheduledExecutorService executorService;
+    protected final ScheduledExecutorService executorService;
 
     /**
      * 时间间隔(ms)，控制刷新频率
      */
-    private int timeInterval = 40;
+    protected int timeInterval = 40;
 
-    protected final HeroAircraft heroAircraft;
-    protected final List<EnemyAircraft> enemyAircrafts;
-    protected final List<BaseBullet> heroBullets;
-    protected final List<BaseBullet> enemyBullets;
-    protected final List<AbstractProp> props;
+    protected HeroAircraft heroAircraft;
+    protected List<EnemyAircraft> enemyAircrafts;
+    protected List<BaseBullet> heroBullets;
+    protected List<BaseBullet> enemyBullets;
+    protected List<AbstractProp> props;
 
-    protected final HashMap<String, EnemyAircraftFactory> enemyFactories;
-    protected final HashMap<String, PropFactory> propFactories;
+    protected HashMap<String, EnemyAircraftFactory> enemyFactories;
+    protected HashMap<String, PropFactory> propFactories;
 
 
     /**
      * 屏幕中出现的敌机最大数量
      */
-    private int enemyMaxNumber = 5;
+    protected int enemyMaxNumber;
 
+    protected double elitePossibility;
     /**
      * 当前得分
      */
-    private int score = 0;
+    protected int score = 0;
     /**
      * 当前时刻
      */
-    private int time = 0;
+    protected int time = 0;
 
-    private int boss_id = 1;   // 若为0则开局出现
+    protected int boss_id = 1;   // 若为0则开局出现
 
     /**
      * 周期（ms)
      * 指示子弹的发射、敌机的产生频率
      */
-    private int cycleDuration = 600;
-    private int cycleTime = 0;
+    protected int cycleDuration;
+    protected int cycleTime = 0;
 
     /**
      * 游戏结束标志
      */
-    private boolean gameOverFlag = false;
+    protected boolean gameOverFlag = false;
 
-
+    protected BufferedImage backGroundImage;
 
     public Game() {
-        heroAircraft = HeroAircraft.getInstance();
-
-        enemyAircrafts = new LinkedList<>();
-        heroBullets = new LinkedList<>();
-        enemyBullets = new LinkedList<>();
-        props = new LinkedList<>();
-
-        enemyFactories = new HashMap<String, EnemyAircraftFactory>();
-        enemyFactories.put("EliteEnemy", new EliteEnemyFactory(2, 10, 30));
-        enemyFactories.put("MobEnemy",new MobEnemyFactory(0, 10, 30));
-        enemyFactories.put("ElitePlus", new ElitePlusFactory(2, 10, 30));
-        enemyFactories.put("Boss", new BossFactory(2, 200));
-
-
-        propFactories = new HashMap<String, PropFactory>();
-        propFactories.put("PropBomb",new PropBombFactory());
-        propFactories.put("PropBullet",new PropBulletFactory());
-        propFactories.put("PropBlood", new PropBloodFactory(30));
-        propFactories.put("PropBulletPlus", new PropBulletPlusFactory());
-
-
+        initParam();
+        initFactory();
 
 
         /**
@@ -135,6 +118,11 @@ public class Game extends JPanel {
         System.out.println("Game Over!");
     }
 
+
+    public abstract void initParam();
+    public abstract void createAircraftAction();
+    public abstract void initFactory();
+    public abstract void updateDifficulty();
     /**
      * 游戏启动入口，执行游戏逻辑
      */
@@ -151,28 +139,10 @@ public class Game extends JPanel {
             if (timeCountAndNewCycleJudge()) {
                 System.out.println(time);
                 // 新敌机产生
-
-                if (enemyAircrafts.size() < enemyMaxNumber && !Boss.exist) {
-
-                    if(score >= 400 * boss_id){
-                        EnemyAircraft boss = enemyFactories.get("Boss").createEnemyAircraft();
-                        enemyAircrafts.add(boss);
-                        MusicManager.execute("boss");
-                        boss_id++;
-                    }
-                    else {
-                        int random_num = (int) (Math.random() * 6);
-                        if (random_num == 0) {
-                            enemyAircrafts.add(enemyFactories.get("ElitePlus").createEnemyAircraft());
-                        } else if (random_num == 1 || random_num == 2) {
-                            enemyAircrafts.add(enemyFactories.get("EliteEnemy").createEnemyAircraft());
-                        } else if (random_num >= 3) {
-                            enemyAircrafts.add(enemyFactories.get("MobEnemy").createEnemyAircraft());
-                        }
-                    }
-                }
+                createAircraftAction();
                 // 飞机射出子弹
                 shootAction();
+                updateDifficulty();
             }
 
             // 子弹移动
@@ -224,6 +194,7 @@ public class Game extends JPanel {
         }
     }
 
+
     private void shootAction() {
         // TODO 敌机射击
         for (AbstractAircraft enemy: enemyAircrafts){
@@ -255,6 +226,21 @@ public class Game extends JPanel {
         }
     }
 
+    private void createProp(EnemyAircraft enemyAircraft){
+        for(int i = 0; i < (int)(Math.random() * (enemyAircraft.getPropNum() + 1));++i) {
+            // 创建0-propNum个道具
+            int random_num = (int) (Math.random() * 4);
+            if (random_num == 0) {
+                props.add(propFactories.get("PropBlood").createProp(enemyAircraft));
+            } else if (random_num == 1) {
+                props.add(propFactories.get("PropBomb").createProp(enemyAircraft));
+            } else if (random_num == 2) {
+                props.add(propFactories.get("PropBullet").createProp(enemyAircraft));
+            } else {
+                props.add(propFactories.get("PropBulletPlus").createProp(enemyAircraft));
+            }
+        }
+    }
 
     /**
      * 碰撞检测：
@@ -292,26 +278,12 @@ public class Game extends JPanel {
                     enemyAircraft.decreaseHp(bullet.getPower());
                     bullet.vanish();
                     MusicManager.execute("bullet");
-                    if (enemyAircraft.notValid()) {
-                        // TODO 获得分数，产生道具补给
+                    if (enemyAircraft.isKilled()) {
+                        // TODO 产生道具补给，分数在后处理阶段结算
                         if(enemyAircraft instanceof Boss){
                             MusicManager.execute("boss_defeated");
                         }
-                        score += enemyAircraft.getScore();
-
-                        for(int i = 0; i < (int)(Math.random() * (enemyAircraft.getPropNum() + 1));++i) {
-                            // 创建0-propNum个道具
-                            int random_num = (int) (Math.random() * 4);
-                            if (random_num == 0) {
-                                props.add(propFactories.get("PropBlood").createProp(enemyAircraft));
-                            } else if (random_num == 1) {
-                                props.add(propFactories.get("PropBomb").createProp(enemyAircraft));
-                            } else if (random_num == 2) {
-                                props.add(propFactories.get("PropBullet").createProp(enemyAircraft));
-                            } else {
-                                props.add(propFactories.get("PropBulletPlus").createProp(enemyAircraft));
-                            }
-                        }
+                        createProp(enemyAircraft);
                     }
                 }
                 // 英雄机 与 敌机 相撞，均损毁
@@ -330,6 +302,10 @@ public class Game extends JPanel {
             if(heroAircraft.crash(prop) || prop.crash(heroAircraft)){
                 MusicManager.execute("supply");
                 prop.vanish();
+                if(prop instanceof PropBomb){
+                    ((PropBomb) prop).register(enemyBullets);
+                    ((PropBomb) prop).register(enemyAircrafts);
+                }
                 prop.applyToAircraft(heroAircraft);
             }
         }
@@ -346,10 +322,19 @@ public class Game extends JPanel {
      * 无效的原因可能是撞击或者飞出边界
      */
     private void postProcessAction() {
+        DeathCheck();
         enemyBullets.removeIf(AbstractFlyingObject::notValid);
         heroBullets.removeIf(AbstractFlyingObject::notValid);
         enemyAircrafts.removeIf(AbstractFlyingObject::notValid);
         props.removeIf(AbstractFlyingObject::notValid);
+    }
+
+    private void DeathCheck() {
+        for(EnemyAircraft enemyAircraft : enemyAircrafts){
+            if(enemyAircraft.isKilled()){
+                score += enemyAircraft.getScore();
+            }
+        }
     }
 
 
@@ -363,7 +348,55 @@ public class Game extends JPanel {
      *
      * @param  g
      */
+    public void paint(Graphics g){
+        super.paint(g);
+        // 绘制背景,图片滚动
+        g.drawImage(backGroundImage, 0, this.backGroundTop - Main.WINDOW_HEIGHT, null);
+        g.drawImage(backGroundImage, 0, this.backGroundTop, null);
+        this.backGroundTop += 1;
+        if (this.backGroundTop == Main.WINDOW_HEIGHT) {
+            this.backGroundTop = 0;
+        }
+
+        // 先绘制子弹，后绘制飞机
+        // 这样子弹显示在飞机的下层
+        paintImageWithPositionRevised(g, enemyBullets);
+        paintImageWithPositionRevised(g, heroBullets);
+        paintImageWithPositionRevised(g, props);
+
+        paintImageWithPositionRevised(g, enemyAircrafts);
+
+        g.drawImage(ImageManager.HERO_IMAGE, heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
+                heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2, null);
+        paintHeroHealthBar(g);
+
+        //绘制得分和生命值
+        paintScoreAndLife(g);
+    }
     // 在子类实现paint方法
+    protected void paintHeroHealthBar(Graphics g) {
+        int barWidth = heroAircraft.getWidth();
+        int barHeight = 5;
+        int x = heroAircraft.getLocationX() - (heroAircraft.getWidth() / 2);
+        int y = heroAircraft.getLocationY() + (heroAircraft.getHeight() / 2);
+
+        // 绘制血条底色
+        g.setColor(Color.GRAY);
+        g.fillRect(x, y, barWidth, barHeight);
+
+        int hp = heroAircraft.getHp();
+        int maxHp = heroAircraft.getMaxHp();
+        int fillWidth = hp * barWidth / maxHp; // 计算填充宽度
+        Color fillColor = hp > maxHp / 4 ? Color.GREEN : Color.RED;
+
+        // 绘制血条填充色
+        g.setColor(fillColor);
+        g.fillRect(x, y, fillWidth, barHeight);
+
+        // 绘制血条边框
+        g.setColor(Color.BLACK);
+        g.drawRect(x, y, barWidth, barHeight);
+    }
 
     protected void paintImageWithPositionRevised(Graphics g, List<? extends AbstractFlyingObject> objects) {
         if (objects.size() == 0) {

@@ -3,10 +3,7 @@ package edu.hitsz.aircraft;
 import edu.hitsz.bullet.BaseBullet;
 import edu.hitsz.bullet.EnemyBullet;
 import edu.hitsz.bullet.HeroBullet;
-import edu.hitsz.prop.AbstractProp;
-import edu.hitsz.prop.PropBlood;
-import edu.hitsz.prop.PropBomb;
-import edu.hitsz.prop.PropBullet;
+import edu.hitsz.prop.*;
 import edu.hitsz.strategy.SprayShoot;
 import edu.hitsz.strategy.StraightShoot;
 
@@ -14,37 +11,25 @@ import edu.hitsz.strategy.StraightShoot;
 import java.util.LinkedList;
 import java.util.List;
 
-public class EliteEnemy extends EnemyAircraft {
+public class EliteEnemy extends EnemyAircraft implements PropBombObservable {
 
-    public EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
-        super(locationX, locationY, speedX, speedY, hp);
-        power = 30;
-        direction = 1;
-        propNum = 1;
-        score = 20;
+    public EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum) {
+        super(locationX, locationY, speedX, speedY, hp, power, shootNum);
+        this.propNum = 1;
+        this.score = 20;
+        this.direction = 1;
         setStrategy(new StraightShoot());
     }
 
-
-    public int getHp() {
-        return super.getHp();
-    }
-
-    public void forward() {
-        super.forward();
-        if (this.locationY >= 768) {
-            this.vanish();
-        }
-    }
-
-
-
-    @Override
-    public int getScore(){
-        return score;
+    public EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp) {
+        this(locationX, locationY, speedX, speedY, hp, 30, 1);
     }
 
     @Override
-    public int getPropNum() { return propNum;};
+    public void update(){
+        this.kill();
+    }
+
+
 
 }

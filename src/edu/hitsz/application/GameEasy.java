@@ -1,39 +1,76 @@
 package edu.hitsz.application;
 
+import edu.hitsz.aircraft.Boss;
+import edu.hitsz.aircraft.EnemyAircraft;
+import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.aircraftfactory.*;
+import edu.hitsz.bullet.BaseBullet;
+import edu.hitsz.propfactory.*;
+
+import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class GameEasy extends Game{
+    private boolean logging = true;
     public GameEasy(){
         super();
     }
 
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void initFactory(){
+        heroAircraft = HeroAircraft.getInstance();
 
-        // 绘制背景,图片滚动
-        g.drawImage(ImageManager.BACKGROUND_EASY_IMAGE, 0, this.backGroundTop - Main.WINDOW_HEIGHT, null);
-        g.drawImage(ImageManager.BACKGROUND_EASY_IMAGE, 0, this.backGroundTop, null);
-        this.backGroundTop += 1;
-        if (this.backGroundTop == Main.WINDOW_HEIGHT) {
-            this.backGroundTop = 0;
+        enemyAircrafts = new LinkedList<>();
+        heroBullets = new LinkedList<>();
+        enemyBullets = new LinkedList<>();
+        props = new LinkedList<>();
+
+        enemyFactories = new HashMap<String, EnemyAircraftFactory>();
+        enemyFactories.put("EliteEnemy", new EliteEnemyFactory(2, 10, 30, 20, 1));
+        enemyFactories.put("MobEnemy",new MobEnemyFactory(0, 10, 30));
+        enemyFactories.put("ElitePlus", new ElitePlusFactory(2, 10, 30, 30, 6));
+//        enemyFactories.put("Boss", new BossFactory(2, 200, 50, 20));
+
+
+        propFactories = new HashMap<String, PropFactory>();
+        propFactories.put("PropBomb",new PropBombFactory());
+        propFactories.put("PropBullet",new PropBulletFactory());
+        propFactories.put("PropBlood", new PropBloodFactory(50));
+        propFactories.put("PropBulletPlus", new PropBulletPlusFactory());
+    }
+
+    @Override
+    public void createAircraftAction(){
+        if (enemyAircrafts.size() < enemyMaxNumber) {
+            int randomNum = (int) (Math.random() * 100);
+            int r = (int)(100 * elitePossibility);
+            if (randomNum < r / 4) {
+                enemyAircrafts.add(enemyFactories.get("ElitePlus").createEnemyAircraft());
+            } else if (randomNum >= r / 4 && randomNum < r) {
+                enemyAircrafts.add(enemyFactories.get("EliteEnemy").createEnemyAircraft());
+            } else if (randomNum >= r) {
+                enemyAircrafts.add(enemyFactories.get("MobEnemy").createEnemyAircraft());
+            }
         }
+    }
 
-        // 先绘制子弹，后绘制飞机
-        // 这样子弹显示在飞机的下层
-        paintImageWithPositionRevised(g, enemyBullets);
-        paintImageWithPositionRevised(g, heroBullets);
-        paintImageWithPositionRevised(g, props);
+    @Override
+    public void updateDifficulty(){
+        //简单模式不提高难度
+        if(logging){
+            System.out.println("note: 简单模式难度不随时间提升!");
+        }
+        logging = false;
+    }
 
-        paintImageWithPositionRevised(g, enemyAircrafts);
-
-        g.drawImage(ImageManager.HERO_IMAGE, heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
-                heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2, null);
-
-
-        //绘制得分和生命值
-        paintScoreAndLife(g);
-
+    @Override
+    public void initParam(){
+        enemyMaxNumber = 4;
+        cycleDuration = 800;
+        elitePossibility = 0.1;
+        backGroundImage = ImageManager.BACKGROUND_EASY_IMAGE;
     }
 }
 

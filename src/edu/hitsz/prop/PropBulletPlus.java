@@ -15,6 +15,7 @@ public class PropBulletPlus extends AbstractProp{
 
     @Override
     public void applyToAircraft(HeroAircraft heroAircraft) {
+        heroAircraft.setShootNum(20);
         heroAircraft.setStrategy(new RingShoot());
         System.out.println("FireSupply active");
         recover(heroAircraft);

@@ -1,38 +1,109 @@
 package edu.hitsz.application;
 
+import edu.hitsz.aircraft.Boss;
+import edu.hitsz.aircraft.EnemyAircraft;
+import edu.hitsz.aircraft.HeroAircraft;
+import edu.hitsz.aircraftfactory.*;
+import edu.hitsz.propfactory.*;
+
+import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class GameHard extends Game{
+    private final int stone = 10;
+    private int clk = 0;
+
     public GameHard(){
         super();
     }
 
     @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void initParam(){
+        enemyMaxNumber = 8;
+        cycleDuration = 400;
+        elitePossibility = 0.3;
+        backGroundImage = ImageManager.BACKGROUND_HARD_IMAGE;
+    }
 
-        // 绘制背景,图片滚动
-        g.drawImage(ImageManager.BACKGROUND_HARD_IMAGE, 0, this.backGroundTop - Main.WINDOW_HEIGHT, null);
-        g.drawImage(ImageManager.BACKGROUND_HARD_IMAGE, 0, this.backGroundTop, null);
-        this.backGroundTop += 1;
-        if (this.backGroundTop == Main.WINDOW_HEIGHT) {
-            this.backGroundTop = 0;
+    @Override
+    public void createAircraftAction(){
+        if (enemyAircrafts.size() < enemyMaxNumber && !Boss.exist) {
+
+            if(score >= 400 * boss_id){
+                EnemyAircraft boss = enemyFactories.get("Boss").createEnemyAircraft();
+                enemyAircrafts.add(boss);
+                MusicManager.execute("boss");
+                boss_id++;
+            }
+            else {
+                int randomNum = (int) (Math.random() * 100);
+                int r = (int)(100 * elitePossibility);
+                if (randomNum < r / 4) {
+                    enemyAircrafts.add(enemyFactories.get("ElitePlus").createEnemyAircraft());
+                } else if (randomNum >= r / 4 && randomNum < r) {
+                    enemyAircrafts.add(enemyFactories.get("EliteEnemy").createEnemyAircraft());
+                } else if (randomNum >= r) {
+                    enemyAircrafts.add(enemyFactories.get("MobEnemy").createEnemyAircraft());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void initFactory(){
+        heroAircraft = HeroAircraft.getInstance();
+
+        enemyAircrafts = new LinkedList<>();
+        heroBullets = new LinkedList<>();
+        enemyBullets = new LinkedList<>();
+        props = new LinkedList<>();
+
+        enemyFactories = new HashMap<String, EnemyAircraftFactory>();
+        enemyFactories.put("EliteEnemy", new EliteEnemyFactory(3, 10, 40, 30, 1));
+        enemyFactories.put("MobEnemy",new MobEnemyFactory(0, 10, 30));
+        enemyFactories.put("ElitePlus", new ElitePlusFactory(2, 10, 30, 50, 8));
+        enemyFactories.put("Boss", new BossFactory(2, 400, 60, 25));
+
+
+        propFactories = new HashMap<String, PropFactory>();
+        propFactories.put("PropBomb",new PropBombFactory());
+        propFactories.put("PropBullet",new PropBulletFactory());
+        propFactories.put("PropBlood", new PropBloodFactory(50));
+        propFactories.put("PropBulletPlus", new PropBulletPlusFactory());
+    }
+
+
+    public void updateFactory(){
+
+        for(EnemyAircraftFactory factory: enemyFactories.values()){
+            factory.update();
+        }
+        System.out.println("敌机属性提升");
+    }
+
+    public void updateParam(){
+
+        if(enemyMaxNumber < 12){
+            enemyMaxNumber += 1;
+        }
+        if(cycleDuration > 350){
+            cycleDuration -= 5;
+        }
+        if(elitePossibility < 0.5){
+            elitePossibility += 0.05;
         }
 
-        // 先绘制子弹，后绘制飞机
-        // 这样子弹显示在飞机的下层
-        paintImageWithPositionRevised(g, enemyBullets);
-        paintImageWithPositionRevised(g, heroBullets);
-        paintImageWithPositionRevised(g, props);
+        System.out.println("敌机上限增加，双方射速提高，敌机刷新频率加快，精英机出现概率提高");
+    }
 
-        paintImageWithPositionRevised(g, enemyAircrafts);
-
-        g.drawImage(ImageManager.HERO_IMAGE, heroAircraft.getLocationX() - ImageManager.HERO_IMAGE.getWidth() / 2,
-                heroAircraft.getLocationY() - ImageManager.HERO_IMAGE.getHeight() / 2, null);
-
-
-        //绘制得分和生命值
-        paintScoreAndLife(g);
-
+    @Override
+    public void updateDifficulty(){
+        clk = (clk + 1) % stone;
+        if(clk == 0) {
+            updateParam();
+            updateFactory();
+        }
     }
 }

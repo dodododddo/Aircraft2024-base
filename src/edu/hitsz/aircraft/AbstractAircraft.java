@@ -22,11 +22,14 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     protected AbstractStrategy strategy;
     protected int direction;
     protected int power;
+    protected int shootNum;
 
-    public AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
+    public AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum) {
         super(locationX, locationY, speedX, speedY);
         this.hp = hp;
         this.maxHp = hp;
+        this.power = power;
+        this.shootNum = shootNum;
     }
 
     public void decreaseHp(int decrease){
@@ -52,6 +55,10 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
 
     public int getPower() {return power;}
 
+    public int getShootNum(){
+        return shootNum;
+    }
+
     /**
      * 飞机射击方法，可射击对象必须实现
      * @return
@@ -65,6 +72,12 @@ public abstract class AbstractAircraft extends AbstractFlyingObject {
     public void setStrategy(AbstractStrategy strategy){
         this.strategy = strategy;
     }
+
+    public void setShootNum(int shootNum){
+        this.shootNum = shootNum;
+    }
+
+
 
 }
 

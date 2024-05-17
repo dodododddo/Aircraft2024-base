@@ -25,6 +25,7 @@ abstract class AbstractFlyingObject
     + notValid():boolean
     + vanish():void
 }
+
 abstract class AbstractAircraft
 {
 	# maxHp:int

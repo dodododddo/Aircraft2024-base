@@ -18,6 +18,7 @@ public abstract class BaseBullet extends AbstractFlyingObject {
         this.power = power;
     }
 
+
     @Override
     public void forward() {
         super.forward();

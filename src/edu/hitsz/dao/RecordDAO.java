@@ -7,5 +7,4 @@ public interface RecordDAO {
     void insert(Record record);
     void delete(int idx);
     List<Record> getAll();
-//    void printAll();
 }

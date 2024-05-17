@@ -1,0 +1,49 @@
+@startuml
+'https://plantuml.com/class-diagram
+abstract class Game{
+    - enemyMaxNumber:int
+    - elitePossibility:int
+    - backGroundImage:BufferImage
+    - cycleDuration:int
+    - enemyAircraftFactories: HashMap<EnemyAircraftFactory>
+    - propFactories:HashMap<PropFactory>
+    - ...
+
+
+    + {abstract} initParam():void
+    + {abstract} initFactory():void
+    + {abstract} createAircraftAction():void
+    + {abstract} updateDifficulty():void
+
+    + action():void
+    + ...()
+}
+
+class GameEasy{
+    + initParam():void
+    + initFactory():void
+    + createAircraftAction():void
+    + updateDifficulty():void
+}
+
+class GameMedium{
+    + initParam():void
+    + initFactory():void
+    + createAircraftAction():void
+    + updateDifficulty():void
+}
+
+class GameHard{
+    + initParam():void
+    + initFactory():void
+    + createAircraftAction():void
+    + updateDifficulty():void
+}
+
+Game <|-- GameEasy
+Game <|-- GameMedium
+Game <|-- GameHard
+
+
+
+@enduml

@@ -3,53 +3,86 @@
 
 
 abstract class EnemyAircraft{
-    + EnemyAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
-    + {abstract} int getScore()
+    - propNum:int
+    - score:int
+    - killed:boolean
+    + EnemyAircraft(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + int getScore()
+    + int getPropNum()
+    + boolean isKilled()
+    + void decreaseHp()
+    + void forward()
+    + void kill()
 }
-
 
 class MobEnemy{
-    - static int score
-    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
-    + int getScore()
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + update():void // 实现PropBombObservable接口，下同
 }
 
-EnemyAircraft <|-- MobEnemy
+class Boss{
+    - exist:static boolean
+    + Boss(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + vanish():void
+}
 
 class EliteEnemy {
-    - static int score
-    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
-    + forward():void
-    + shoot():List<BaseBullet>
-    + int getScore()
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + update():void
 }
 
-EnemyAircraft <|-- EliteEnemy
+class ElitePlus{
+    + ElitePlus(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + update():void
+}
+
 
 abstract class EnemyAircraftFactory{
     - protected int aircraftSpeedX
     - protected int aircraftSpeedY
     - protected int aircraftHp
-    + EnemyAircraftFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftHp)
+    - protected int aircraftPower
+    - protected int aircraftShootNum
+    + EnemyAircraftFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftHp, int aircraftPower, int aircraftShootNum)
     + {abstract} EnemyAircraft createEnemyAircraft()
 }
 
 class MobEnemyFactory{
-    MobEnemyFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp)
+    MobEnemyFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp, int aircraftPower, int aircraftShootNum)
     EnemyAircraft createEnemyAircraft()
 }
 
 class EliteEnemyFactory{
-    EliteEnemyFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp)
+    EliteEnemyFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp, int aircraftPower, int aircraftShootNum)
     EnemyAircraft createEnemyAircraft()
 }
 
-EnemyAircraftFactory <|-- EliteEnemyFactory
+class ElitePlusFactory{
+    ElitePlusFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp, int aircraftPower, int aircraftShootNum)
+    EnemyAircraft createEnemyAircraft()
+}
+
+class BossFactory{
+    BossFactory(int aircraftSpeedX, int aircraftSpeedY, int aircraftSpeedHp, int aircraftPower, int aircraftShootNum)
+    EnemyAircraft createEnemyAircraft()
+}
+
+EnemyAircraft <|-- MobEnemy
+EnemyAircraft <|-- EliteEnemy
+EnemyAircraft <|-- ElitePlus
+EnemyAircraft <|-- Boss
+
 EnemyAircraftFactory <|-- MobEnemyFactory
+EnemyAircraftFactory <|-- EliteEnemyFactory
+EnemyAircraftFactory <|-- ElitePlusFactory
+EnemyAircraftFactory <|-- BossFactory
 
 EnemyAircraftFactory ..> EnemyAircraft
 MobEnemyFactory ..> MobEnemy
 EliteEnemyFactory ..> EliteEnemy
+ElitePlusFactory ..> ElitePlus
+BossFactory ..> Boss
+
 
 
 

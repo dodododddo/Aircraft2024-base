@@ -14,35 +14,20 @@ public class Boss extends EnemyAircraft{
 
     public static boolean exist;
 
-
-    public Boss(int locationX, int locationY, int speedX, int hp) {
-        super(locationX, locationY, speedX, 0, hp);
+    public Boss(int locationX, int locationY, int speedX, int hp, int power, int shootNum) {
+        super(locationX, locationY, speedX, 0, hp, power, shootNum);
         Boss.exist = true;
-        power = 30;
-        score = 100;
-        propNum = 3;
+        this.power = power;
+        this.shootNum = shootNum;
+        this.score = 100;
+        this.propNum = 3;
         setStrategy(new RingShoot());
     }
 
-
-    public int getHp() {
-        return super.getHp();
+    public Boss(int locationX, int locationY, int speedX, int hp) {
+        this(locationX, locationY, speedX, hp, 30, 20);
     }
 
-    public void forward() {
-        super.forward();
-    }
-
-
-
-
-    @Override
-    public int getScore(){
-        return score;
-    }
-
-    @Override
-    public int getPropNum() { return propNum;};
 
     @Override
     public void vanish(){

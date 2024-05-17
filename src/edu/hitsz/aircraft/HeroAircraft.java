@@ -38,9 +38,8 @@ public class HeroAircraft extends AbstractAircraft {
      */
 
 
-    private HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp) {
-        super(locationX, locationY, speedX, speedY, hp);
-        power = 30;
+    private HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum) {
+        super(locationX, locationY, speedX, speedY, hp, power, shootNum);
         direction = -1;
         setStrategy(new StraightShoot());
     }
@@ -53,7 +52,7 @@ public class HeroAircraft extends AbstractAircraft {
                     instance = new HeroAircraft(
                             Main.WINDOW_WIDTH / 2,
                             Main.WINDOW_HEIGHT - ImageManager.HERO_IMAGE.getHeight(),
-                            0, 0, 100);
+                            0, 0, 200, 30, 1);
                 }
             }
         }
@@ -87,5 +86,8 @@ public class HeroAircraft extends AbstractAircraft {
         System.out.println("healing! hp:" + hp);
     }
 
+    public int getMaxHp(){
+        return maxHp;
+    }
 
 }

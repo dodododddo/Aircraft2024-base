@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class StraightShoot implements AbstractStrategy{
-    private int maxNumBullet = 1;
     public StraightShoot(){
     }
 
@@ -25,15 +24,16 @@ public class StraightShoot implements AbstractStrategy{
         if(aircraft instanceof HeroAircraft){
             vY = aircraft.getDirection() * 10;
         }
+        int power = aircraft.getPower();
+        int shootNum = aircraft.getShootNum();
 
-
-        for(int i = 0; i < maxNumBullet; ++i) {
+        for(int i = 0; i < shootNum; ++i) {
             if(aircraft instanceof HeroAircraft) {
-                BaseBullet bullet = new HeroBullet(x + (i * 2 - maxNumBullet + 1) * 10, y, vX, vY, aircraft.getPower());
+                BaseBullet bullet = new HeroBullet(x + (i * 2 - shootNum + 1) * 10, y, vX, vY, power);
                 res.add(bullet);
             }
             else {
-                BaseBullet bullet = new EnemyBullet(x + (i * 2 - maxNumBullet + 1) * 10, y, vX, vY, aircraft.getPower());
+                BaseBullet bullet = new EnemyBullet(x + (i * 2 - shootNum + 1) * 10, y, vX, vY, power);
                 res.add(bullet);
             }
         }

@@ -16,14 +16,14 @@ class Record{
 interface RecordDAO{
     + {abstract} insert(Record record): void
     + {abstract} getAll() : List<Record>
-    + {abstract} printAll(): void
+    + {abstract} delete(int idx): void
 }
 
 class RecordDAOImpl{
      + RecordDAOImpl()
      + insert(Record record): void
      + getAll() : List<Record>
-     + printAll(): void
+     + delete(int idx): void
 }
 
 RecordDAOImpl ..|> RecordDAO

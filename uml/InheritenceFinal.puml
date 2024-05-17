@@ -1,0 +1,170 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+abstract class AbstractFlyingObject
+{
+    # locationX:int
+    # locationY:int
+    # speedX:int
+    # speedY:int
+    # image:BufferedImage
+    # width:int
+    # height:int
+    # isValid:boolean
+
+    + AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY)
+    + forward():void
+    + crash(AbstractFlyingObject flyingObject):boolean
+    + setLocation(double locationX, double locationY):void
+    + getLocationX():int
+    + getLocationY():int
+    + getSpeedY():int
+    + getImage():BufferedImage
+    + getWidth():int
+    + getHeight():int
+    + notValid():boolean
+    + vanish():void
+}
+
+abstract class AbstractAircraft
+{
+	# maxHp:int
+    # hp:int
+    # shootNum:int
+    # power:int
+    # strategy: AbstractStrategy
+    # direction: int
+
+    + AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + decreaseHp(int decrease):void
+    + increaseHp(int increase):void
+    + getHp():int
+    + getShootNum():int
+    + getPower():int
+    + getDirection():int
+    + setStrategy:void
+    + setShootNum:void
+    + shoot():List<BaseBullet>
+ }
+
+
+class HeroAircraft {
+    - instance:static HeroAircraft
+    + HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + getInstance
+    + forward():void
+    + decreaseHp(int decrease):void
+    + increaseHp(int increase):void
+    + getMaxHp():int
+}
+
+AbstractAircraft <|-- HeroAircraft
+
+abstract class EnemyAircraft{
+    - propNum:int
+    - score:int
+    - killed:boolean
+    + EnemyAircraft(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + int getScore()
+    + int getPropNum()
+    + boolean isKilled()
+    + void decreaseHp()
+    + void forward()
+    + void kill()
+}
+
+
+class MobEnemy{
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + update():void // 实现PropBombObservable接口，下同
+}
+
+class Boss{
+    - exist:static boolean
+    + Boss(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + vanish():void
+}
+
+class EliteEnemy {
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + update():void
+}
+
+class ElitePlus{
+    + ElitePlus(int locationX, int locationY, int speedX, int speedY, int hp, int power, int shootNum)
+    + update():void
+}
+
+
+EnemyAircraft <|-- MobEnemy
+EnemyAircraft <|-- EliteEnemy
+EnemyAircraft <|-- ElitePlus
+EnemyAircraft <|-- Boss
+
+AbstractAircraft <|-- EnemyAircraft
+
+
+abstract class BaseBullet
+{
+    - power:int
+    + BaseBullet(int locationX, int locationY, int speedX, int speedY, int power)
+    + forward():void
+	+ getPower():int
+}
+
+class HeroBullet {
+    + HeroBullet(int locationX, int locationY,
+     int speedX, int speedY, int power)
+}
+
+class EnemyBullet {
+    + EnemyBullet(int locationX, int locationY,
+     int speedX, int speedY, int power)
+}
+
+BaseBullet <|-- HeroBullet
+BaseBullet <|-- EnemyBullet
+
+abstract class AbstractProp{
+    + AbstractProp(int locationX, int locationY, int speedX, int speedY)
+    + forward()
+    + {abstract} applyToAircraft(HeroAircraft heroAircraft):void
+ }
+
+class PropBlood{
+    - healing:int
+    + PropBlood(int healing)
+    + applyToAircraft(HeroAircraft heroAircraft):void
+}
+
+class PropBullet{
+    + PropBullet()
+    + applyToAircraft(HeroAircraft heroAircraft):void
+}
+
+class PropBulletPlus{
+    + PropBulletPlus()
+    + applyToAircraft(HeroAircraft heroAircraft):void
+}
+
+class PropBomb{
+    - observers:List<PropBombObservable>
+    + PropBomb()
+    + applyToAircraft(HeroAircraft heroAircraft):void
+    + register(PropBombObservable observe):void
+    + notifyAllObservers():void
+}
+
+AbstractProp <|-- PropBlood
+AbstractProp <|-- PropBullet
+AbstractProp <|-- PropBomb
+AbstractProp <|-- PropBulletPlus
+
+
+AbstractFlyingObject <|-- AbstractAircraft
+AbstractFlyingObject <|-- BaseBullet
+AbstractFlyingObject <|-- AbstractProp
+
+
+
+@enduml
